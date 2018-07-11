@@ -12,7 +12,7 @@
 #define NPTS        10000
 
 //forward declarations
-void   find_chisqMin(); // ROOT minimization class
+void   find_chisqMin(int); // ROOT minimization class
 
 //global variables
 double angle[NPTS],cosangle[NPTS],val[NPTS],err[NPTS];

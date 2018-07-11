@@ -3,13 +3,27 @@
 int main(int argc, char *argv[]) {
 
   char str[256];
+  int mode; //0=a2a4,1=a2
 
   FILE *dataFile;
 
-  if (argc != 2) {
-    printf("\npeak_comp_poisson parameter_file\n");
+  if ((argc != 2)&&(argc != 3)) {
+    printf("\npeak_comp_poisson parameter_file mode\n");
     printf("Calculates a2 and a4 for angular distribution data.\n\nData format is (in plaintext, one line per value):\nAngle(degrees)   Distribution value   Distribution value error\n\n");
+    printf("Valid options for 'mode' are:\na2a4 - Fit both A2 and A4.\na2 - Fit a2 only.\nIf no valid mode is given, a2a4 is assumed.\n\n");
     exit(-1);
+  }
+
+  if(argc == 3){
+    if(strcmp(argv[2],"a2a4")==0){
+      mode=0;
+    }else if(strcmp(argv[2],"a2")==0){
+      mode=1;
+    }else{
+      mode=0;//a2a4 is default
+    }
+  }else{
+    mode=0;//a2a4 is default
   }
 
   numDataPts=0;
@@ -37,14 +51,13 @@ int main(int argc, char *argv[]) {
   }
   printf("\n");
   
-  find_chisqMin();
+  find_chisqMin(mode);
 
   return 0; // great success
 }
 
 double a2a4(const double *par) {
-  // neyman chisq
-  // for more information see Baker and Cousins pg. 438 and Appendix
+  
   double yi = 0.;     // model
   double ni = 0.;     // experiment
   double chisq = 0.; // neyman ratio chisq
@@ -66,7 +79,30 @@ double a2a4(const double *par) {
   return chisq;
 }
 
-void find_chisqMin() {
+double a2(const double *par) {
+  
+  double yi = 0.;     // model
+  double ni = 0.;     // experiment
+  double chisq = 0.; // neyman ratio chisq
+  int i = 0;
+
+  for (i = 0; i < numDataPts; i++) {
+    // value in ith bin
+    ni = val[i];
+    // calculate model in the ith bin
+    yi = 1.0 + par[0]*0.5*(3.0*cosangle[i]*cosangle[i] - 1.0);
+    yi = yi*par[1];
+    //printf("n[%i]: %f, y[%i]: %f, err[%i]: %f\n",i,ni,i,yi,i,err[i]);
+
+    // evaluate chisq given input parameters
+    chisq += (ni - yi) * (ni - yi) / (err[i]*err[i]);
+    
+  }
+  //printf("chisq: %f\n",chisq);
+  return chisq;
+}
+
+void find_chisqMin(int mode) {
 
   printf("Fitting...\n");
 
@@ -74,35 +110,30 @@ void find_chisqMin() {
   // https://root.cern.ch/root/html/ROOT__Math__Minimizer.html
   char minName[132] = "Minuit";
   char algoName[132] = ""; // default (Migard for Minuit)
-  ROOT::Math::Minimizer *min =
-      ROOT::Math::Factory::CreateMinimizer(minName, algoName);
+  ROOT::Math::Minimizer *min = ROOT::Math::Factory::CreateMinimizer(minName, algoName);
 
-    // set tolerance , etc...
-    min->SetMaxFunctionCalls(10000000); // for Minuit
-    min->SetMaxIterations(100000);
-    min->SetTolerance(0.01);
-    //min->SetPrintLevel(1); //set to 0 for less info
-    min->SetPrintLevel(0); // set to 1 for more info
+  // set tolerance , etc...
+  min->SetMaxFunctionCalls(10000000); // for Minuit
+  min->SetMaxIterations(100000);
+  min->SetTolerance(0.01);
+  //min->SetPrintLevel(1); //set to 0 for less info
+  min->SetPrintLevel(0); // set to 1 for more info
 
-    // create function wrapper for minmizer
-    // a IMultiGenFunction type
-    ROOT::Math::Functor lr(&a2a4,3); // neyman chisq */
+  // create function wrapper for minmizer
+  // a IMultiGenFunction type
+  if(mode==0){
+
+    ROOT::Math::Functor lr(&a2a4,3); //a2a4 function
+    min->SetFunction(lr);
 
     // step size and starting variable values
     double step[3] = {0.01,0.01,0.1};
-    double variable[3] = {0.0,0.0,10.0};
-
-    min->SetFunction(lr);
+    double variable[3] = {0.0,0.0,1.0};
 
     // Set pars for minimization
     min->SetVariable(0, "a2", variable[0], step[0]);
     min->SetVariable(1, "a4", variable[1], step[1]);
     min->SetVariable(2, "scale", variable[2], step[2]);
-
-    // variable limits (optional)
-    /* min->SetVariableLimits(0,0.,1E3); */
-    /* min->SetVariableLimits(1,0.,1E3); */
-    /* min->SetVariableLimits(2,0.,1E3); */
 
     // do the minimization
     min->Minimize();
@@ -112,13 +143,44 @@ void find_chisqMin() {
     const double *exs = min->Errors();
 
     // print results
-    // degrees of freedom assuming 2 pars
-    double ndf = numDataPts - 3;
-    
+    double ndf = numDataPts - 3; //degrees of freedom assuming 3 pars
+    printf("Fit function: f(x) = 1 + a2*p2(cos (theta)) + a4*p4(cos (theta))\n");
     printf("a2: %f +/- %f\n",xs[0],exs[0]);
     printf("a4: %f +/- %f\n",xs[1],exs[1]);
     printf("scaling: %f +/- %f\n",xs[2],exs[2]);
     printf("chisq: %f\n",min->MinValue());
     printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+
+  }else if(mode==1){
+
+    ROOT::Math::Functor lr(&a2,2); //a2 function
+    min->SetFunction(lr);
+
+    // step size and starting variable values
+    double step[3] = {0.01,0.01,0.1};
+    double variable[3] = {0.0,0.0,1.0};
+
+    // Set pars for minimization
+    min->SetVariable(0, "a2", variable[0], step[0]);
+    min->SetVariable(1, "scale", variable[2], step[2]);
+
+    // do the minimization
+    min->Minimize();
+
+    // grab parameters and parameter errors from minimum
+    const double *xs = min->X();
+    const double *exs = min->Errors();
+
+    // print results
+    double ndf = numDataPts - 2; //degrees of freedom assuming 2 pars
+    printf("Fit function: f(x) = 1 + a2*p2(cos (theta))\n");
+    printf("a2: %f +/- %f\n",xs[0],exs[0]);
+    printf("scaling: %f +/- %f\n",xs[1],exs[1]);
+    printf("chisq: %f\n",min->MinValue());
+    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+
+  }
+  
+  
 
 }

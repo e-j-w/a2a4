@@ -6,10 +6,11 @@ Maintainer: Jonathan Williams
 
 ## Description
 
-Fits A2, A4 angular distribution coefficients to experimental data using Minuit (ROOT).  See the file `sample_data.txt` for example data (angles specified in degrees).
+Fits A2, A4 angular distribution coefficients to experimental data using Minuit (ROOT).  See the file `sample_data.txt` for example data (angles specified in degrees), or run the program without any parameters to see all available options.
 
 ### Useful References: 
 
+* W. D. Hamilton, The Electromagnetic Interaction in Nuclear Spectroscopy (1975)
 * Phys. Rev. C 45, 2161 (1992)
 * Phys. Rev. C 89, 024324 (2014)
 
