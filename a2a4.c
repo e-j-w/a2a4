@@ -9,13 +9,15 @@ int main(int argc, char *argv[]) {
 
   if ((argc != 2)&&(argc != 3)) {
     printf("\na2a4 parameter_file mode\n");
-    printf("Calculates a2 and a4 for angular distribution data.\n\nData format is (in plaintext, one line per value):\nAngle(degrees)   Distribution value   Distribution value error\n\n");
-    printf("Valid options for 'mode' are:\na2a4 - Fit a2 and a4.\na2 - Fit a2 only.\na4 - Fit a4 only.\na6 - Fit a6 only.\na2noscaling - Fit a2 only (no scaling).\nIf no valid mode is given, a2a4 is assumed.\n\n");
+    printf("Calculates a2, a4, and a6 values for angular distribution data.\n\nData format is (in plaintext, one line per value):\nAngle(degrees)   Distribution value   Distribution value error\n\n");
+    printf("Valid options for 'mode' are:\na2a4 - Fit a2, a4, and a6.\na2a4 - Fit a2 and a4.\na2 - Fit a2 only.\na4 - Fit a4 only.\na6 - Fit a6 only.\na2noscaling - Fit a2 only (no scaling).\nIf no valid mode is given, a2a4 is assumed.\n\n");
     exit(-1);
   }
 
   if(argc == 3){
-    if(strcmp(argv[2],"a2a4")==0){
+    if(strcmp(argv[2],"a2a4a6")==0){
+      mode=FITMODE_A2A4A6;
+    }else if(strcmp(argv[2],"a2a4")==0){
       mode=FITMODE_A2A4;
     }else if(strcmp(argv[2],"a2")==0){
       mode=FITMODE_A2;
@@ -60,6 +62,29 @@ int main(int argc, char *argv[]) {
   find_chisqMin(mode);
 
   return 0; // great success
+}
+
+double a2a4a6(const double *par) {
+  
+  double yi = 0.;     // model
+  double ni = 0.;     // experiment
+  double chisq = 0.; // neyman ratio chisq
+  int i = 0;
+
+  for (i = 0; i < numDataPts; i++) {
+    // value in ith bin
+    ni = val[i];
+    // calculate model in the ith bin
+    yi = 1.0 + par[0]*0.5*(3.0*cosangle[i]*cosangle[i] - 1.0) + par[1]*0.125*(35.0*cosangle[i]*cosangle[i]*cosangle[i]*cosangle[i] - 30.0*cosangle[i]*cosangle[i] + 3.0) + par[2]*0.0625*(231.0*cosangle[i]*cosangle[i]*cosangle[i]*cosangle[i]*cosangle[i]*cosangle[i] - 315.0*cosangle[i]*cosangle[i]*cosangle[i]*cosangle[i] + 105.0*cosangle[i]*cosangle[i] - 5.0);
+    yi = yi*par[3];
+    //printf("n[%i]: %f, y[%i]: %f, err[%i]: %f\n",i,ni,i,yi,i,err[i]);
+
+    // evaluate chisq given input parameters
+    chisq += (ni - yi) * (ni - yi) / (err[i]*err[i]);
+    
+  }
+  //printf("chisq: %f\n",chisq);
+  return chisq;
 }
 
 double a2a4(const double *par) {
@@ -197,7 +222,39 @@ void find_chisqMin(int mode) {
 
   // create function wrapper for minmizer
   // a IMultiGenFunction type
-  if(mode==FITMODE_A2A4){
+  if(mode==FITMODE_A2A4A6){
+
+    ROOT::Math::Functor lr(&a2a4,4); //a2a4 function
+    min->SetFunction(lr);
+
+    // step size and starting variable values
+    double step[4] = {0.01,0.01,0.01,0.1};
+    double variable[4] = {0.0,0.0,0.0,1.0};
+
+    // Set pars for minimization
+    min->SetVariable(0, "a2", variable[0], step[0]);
+    min->SetVariable(1, "a4", variable[1], step[1]);
+    min->SetVariable(2, "a6", variable[2], step[2]);
+    min->SetVariable(3, "scale", variable[3], step[3]);
+
+    // do the minimization
+    min->Minimize();
+
+    // grab parameters and parameter errors from minimum
+    const double *xs = min->X();
+    const double *exs = min->Errors();
+
+    // print results
+    double ndf = numDataPts - 4; //degrees of freedom assuming 4 pars
+    printf("Fit function: f(x) = 1 + a2*p2(cos (theta)) + a4*p4(cos (theta)) + a6*p6(cos (theta))\n");
+    printf("a2: %f +/- %f\n",xs[0],exs[0]);
+    printf("a4: %f +/- %f\n",xs[1],exs[1]);
+    printf("a6: %f +/- %f\n",xs[2],exs[2]);
+    printf("scaling: %f +/- %f\n",xs[3],exs[3]);
+    printf("chisq: %f\n",min->MinValue());
+    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+
+  }else if(mode==FITMODE_A2A4){
 
     ROOT::Math::Functor lr(&a2a4,3); //a2a4 function
     min->SetFunction(lr);
@@ -261,8 +318,8 @@ void find_chisqMin(int mode) {
     min->SetFunction(lr);
 
     // step size and starting variable values
-    double step[3] = {0.01,0.1};
-    double variable[3] = {0.0,1.0};
+    double step[2] = {0.01,0.1};
+    double variable[2] = {0.0,1.0};
 
     // Set pars for minimization
     min->SetVariable(0, "a4", variable[0], step[0]);
@@ -276,7 +333,7 @@ void find_chisqMin(int mode) {
     const double *exs = min->Errors();
 
     // print results
-    double ndf = numDataPts - 3; //degrees of freedom assuming 3 pars
+    double ndf = numDataPts - 2; //degrees of freedom assuming 2 pars
     printf("Fit function: f(x) = 1 + a4*p4(cos (theta))\n");
     printf("a4: %f +/- %f\n",xs[0],exs[0]);
     printf("scaling: %f +/- %f\n",xs[1],exs[1]);
@@ -289,8 +346,8 @@ void find_chisqMin(int mode) {
     min->SetFunction(lr);
 
     // step size and starting variable values
-    double step[3] = {0.01,0.1};
-    double variable[3] = {0.0,1.0};
+    double step[2] = {0.01,0.1};
+    double variable[2] = {0.0,1.0};
 
     // Set pars for minimization
     min->SetVariable(0, "a6", variable[0], step[0]);
@@ -304,7 +361,7 @@ void find_chisqMin(int mode) {
     const double *exs = min->Errors();
 
     // print results
-    double ndf = numDataPts - 3; //degrees of freedom assuming 3 pars
+    double ndf = numDataPts - 2; //degrees of freedom assuming 2 pars
     printf("Fit function: f(x) = 1 + a6*p6(cos (theta))\n");
     printf("a6: %f +/- %f\n",xs[0],exs[0]);
     printf("scaling: %f +/- %f\n",xs[1],exs[1]);
@@ -331,7 +388,7 @@ void find_chisqMin(int mode) {
     const double *exs = min->Errors();
 
     // print results
-    double ndf = numDataPts - 2; //degrees of freedom assuming 2 pars
+    double ndf = numDataPts - 1; //degrees of freedom assuming 1 par
     printf("Fit function: f(x) = 1 + a2*p2(cos (theta))\n");
     printf("a2: %f +/- %f\n",xs[0],exs[0]);
     printf("chisq: %f\n",min->MinValue());

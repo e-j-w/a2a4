@@ -21,4 +21,4 @@ int numDataPts;
 // ROOT stuff
 double a2a4(const double *par); // function to get chisq
 
-enum fit_mode_enum{FITMODE_A2, FITMODE_A4, FITMODE_A6, FITMODE_A2A4, FITMODE_A2NOSCALING, FITMODE_ENUM_LENGTH};
+enum fit_mode_enum{FITMODE_A2, FITMODE_A4, FITMODE_A6, FITMODE_A2A4, FITMODE_A2A4A6, FITMODE_A2NOSCALING, FITMODE_ENUM_LENGTH};

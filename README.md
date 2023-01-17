@@ -1,12 +1,12 @@
 # A2A4
 
-Angular Distribution A2/A4 fitter
+Angular Distribution *a2*/*a4* (and *a6*) fitter
 
 Maintainer: Jonathan Williams
 
 ## Description
 
-Fits A2, A4 angular distribution coefficients to experimental data using Minuit (ROOT).  See the file `sample_data.txt` for example data (angles specified in degrees), or run the program without any parameters to see all available options.
+Fits *a2*, *a4*, and/or *a6* angular distribution coefficients to experimental data using Minuit (ROOT).  See the file `sample_data.txt` for example data (angles specified in degrees), or run the program without any parameters to see all available options.
 
 ### Useful References: 
 
