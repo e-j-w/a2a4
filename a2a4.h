@@ -10,6 +10,7 @@
 #include "Math/Functor.h"
 
 #define NPTS        10000
+#define BIG_NUMBER  1E30
 
 //forward declarations
 void   find_chisqMin(int); // ROOT minimization class

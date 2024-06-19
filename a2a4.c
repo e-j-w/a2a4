@@ -4,9 +4,9 @@ int main(int argc, char *argv[]) {
 
   char str[256];
   int mode; //0=a2a4,1=a2
-  fixedA2=-1.;
-  fixedA4=-1.;
-  fixedA6=-1.;
+  fixedA2=BIG_NUMBER;
+  fixedA4=BIG_NUMBER;
+  fixedA6=BIG_NUMBER;
 
   FILE *dataFile;
 
@@ -255,15 +255,15 @@ void find_chisqMin(int mode) {
     min->SetVariable(3, "scale", variable[3], step[3]);
 
     // handle fixed values
-    if(fixedA2 >= 0.){
+    if(fixedA2 != BIG_NUMBER){
       min->SetVariableValue(0,fixedA2);
       min->FixVariable(0);
     }
-    if(fixedA4 >= 0.){
+    if(fixedA4 != BIG_NUMBER){
       min->SetVariableValue(1,fixedA4);
       min->FixVariable(1);
     }
-    if(fixedA6 >= 0.){
+    if(fixedA6 != BIG_NUMBER){
       min->SetVariableValue(2,fixedA6);
       min->FixVariable(2);
     }
@@ -300,11 +300,11 @@ void find_chisqMin(int mode) {
     min->SetVariable(2, "scale", variable[2], step[2]);
 
     // handle fixed values
-    if(fixedA2 >= 0.){
+    if(fixedA2 != BIG_NUMBER){
       min->SetVariableValue(0,fixedA2);
       min->FixVariable(0);
     }
-    if(fixedA4 >= 0.){
+    if(fixedA4 != BIG_NUMBER){
       min->SetVariableValue(1,fixedA4);
       min->FixVariable(1);
     }
@@ -339,7 +339,7 @@ void find_chisqMin(int mode) {
     min->SetVariable(1, "scale", variable[1], step[1]);
 
     // handle fixed values
-    if(fixedA2 >= 0.){
+    if(fixedA2 != BIG_NUMBER){
       min->SetVariableValue(0,fixedA2);
       min->FixVariable(0);
     }
