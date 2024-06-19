@@ -4,13 +4,20 @@ int main(int argc, char *argv[]) {
 
   char str[256];
   int mode; //0=a2a4,1=a2
+  fixedA2=-1.;
+  fixedA4=-1.;
+  fixedA6=-1.;
 
   FILE *dataFile;
 
-  if ((argc != 2)&&(argc != 3)) {
+  if ((argc < 2)||(argc > 5)) {
     printf("\na2a4 parameter_file mode\n");
     printf("Calculates a2, a4, and a6 values for angular distribution data.\n\nData format is (in plaintext, one line per value):\nAngle(degrees)   Distribution value   Distribution value error\n\n");
-    printf("Valid options for 'mode' are:\na2a4 - Fit a2, a4, and a6.\na2a4 - Fit a2 and a4.\na2 - Fit a2 only.\na4 - Fit a4 only.\na6 - Fit a6 only.\na2noscaling - Fit a2 only (no scaling).\nIf no valid mode is given, a2a4 is assumed.\n\n");
+    printf("Valid options for 'mode' are:\na2a4a6 - Fit a2, a4, and a6.\na2a4 - Fit a2 and a4.\n");
+    printf("a2 - Fit a2 only.\na4 - Fit a4 only.\na6 - Fit a6 only.\n");
+    printf("a2noscaling - Fit a2 only (no scaling).\nIf no valid mode is given, a2a4 is assumed.\n");
+    printf("Alternatively, fixed values of a2, a4, and a6 can be specified using the syntax (a4 and/or a6 can be omitted, in which case they won't be fit):\n");
+    printf("a2a4 parameter_file a2_fixed a4_fixed a6_fixed\n");
     exit(-1);
   }
 
@@ -28,8 +35,18 @@ int main(int argc, char *argv[]) {
     }else if(strcmp(argv[2],"a2noscaling")==0){
       mode=FITMODE_A2NOSCALING;
     }else{
-      mode=FITMODE_A2A4;//a2a4 is default
+      mode=FITMODE_A2;
+      fixedA2 = atof(argv[2]);
     }
+  }else if(argc == 4){
+    mode=FITMODE_A2A4;
+    fixedA2 = atof(argv[2]);
+    fixedA4 = atof(argv[3]);
+  }else if(argc == 5){
+    mode=FITMODE_A2A4A6;
+    fixedA2 = atof(argv[2]);
+    fixedA4 = atof(argv[3]);
+    fixedA6 = atof(argv[4]);
   }else{
     mode=FITMODE_A2A4;//a2a4 is default
   }
@@ -237,6 +254,20 @@ void find_chisqMin(int mode) {
     min->SetVariable(2, "a6", variable[2], step[2]);
     min->SetVariable(3, "scale", variable[3], step[3]);
 
+    // handle fixed values
+    if(fixedA2 >= 0.){
+      min->SetVariableValue(0,fixedA2);
+      min->FixVariable(0);
+    }
+    if(fixedA4 >= 0.){
+      min->SetVariableValue(1,fixedA4);
+      min->FixVariable(1);
+    }
+    if(fixedA6 >= 0.){
+      min->SetVariableValue(2,fixedA6);
+      min->FixVariable(2);
+    }
+
     // do the minimization
     min->Minimize();
 
@@ -251,8 +282,8 @@ void find_chisqMin(int mode) {
     printf("a4: %f +/- %f\n",xs[1],exs[1]);
     printf("a6: %f +/- %f\n",xs[2],exs[2]);
     printf("scaling: %f +/- %f\n",xs[3],exs[3]);
-    printf("chisq: %f\n",min->MinValue());
-    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+    printf("\nchisq:\n%f\n",min->MinValue());
+    printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
 
   }else if(mode==FITMODE_A2A4){
 
@@ -268,6 +299,16 @@ void find_chisqMin(int mode) {
     min->SetVariable(1, "a4", variable[1], step[1]);
     min->SetVariable(2, "scale", variable[2], step[2]);
 
+    // handle fixed values
+    if(fixedA2 >= 0.){
+      min->SetVariableValue(0,fixedA2);
+      min->FixVariable(0);
+    }
+    if(fixedA4 >= 0.){
+      min->SetVariableValue(1,fixedA4);
+      min->FixVariable(1);
+    }
+
     // do the minimization
     min->Minimize();
 
@@ -281,8 +322,8 @@ void find_chisqMin(int mode) {
     printf("a2: %f +/- %f\n",xs[0],exs[0]);
     printf("a4: %f +/- %f\n",xs[1],exs[1]);
     printf("scaling: %f +/- %f\n",xs[2],exs[2]);
-    printf("chisq: %f\n",min->MinValue());
-    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+    printf("\nchisq:\n%f\n",min->MinValue());
+    printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
 
   }else if(mode==FITMODE_A2){
 
@@ -297,6 +338,12 @@ void find_chisqMin(int mode) {
     min->SetVariable(0, "a2", variable[0], step[0]);
     min->SetVariable(1, "scale", variable[1], step[1]);
 
+    // handle fixed values
+    if(fixedA2 >= 0.){
+      min->SetVariableValue(0,fixedA2);
+      min->FixVariable(0);
+    }
+
     // do the minimization
     min->Minimize();
 
@@ -309,8 +356,8 @@ void find_chisqMin(int mode) {
     printf("Fit function: f(x) = 1 + a2*p2(cos (theta))\n");
     printf("a2: %f +/- %f\n",xs[0],exs[0]);
     printf("scaling: %f +/- %f\n",xs[1],exs[1]);
-    printf("chisq: %f\n",min->MinValue());
-    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+    printf("\nchisq:\n%f\n",min->MinValue());
+    printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
 
   }else if(mode==FITMODE_A4){
 
@@ -337,8 +384,8 @@ void find_chisqMin(int mode) {
     printf("Fit function: f(x) = 1 + a4*p4(cos (theta))\n");
     printf("a4: %f +/- %f\n",xs[0],exs[0]);
     printf("scaling: %f +/- %f\n",xs[1],exs[1]);
-    printf("chisq: %f\n",min->MinValue());
-    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+    printf("\nchisq:\n%f\n",min->MinValue());
+    printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
 
   }else if(mode==FITMODE_A6){
 
@@ -365,8 +412,8 @@ void find_chisqMin(int mode) {
     printf("Fit function: f(x) = 1 + a6*p6(cos (theta))\n");
     printf("a6: %f +/- %f\n",xs[0],exs[0]);
     printf("scaling: %f +/- %f\n",xs[1],exs[1]);
-    printf("chisq: %f\n",min->MinValue());
-    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+    printf("\nchisq:\n%f\n",min->MinValue());
+    printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
 
   }else if(mode==FITMODE_A2NOSCALING){
 
@@ -391,11 +438,9 @@ void find_chisqMin(int mode) {
     double ndf = numDataPts - 1; //degrees of freedom assuming 1 par
     printf("Fit function: f(x) = 1 + a2*p2(cos (theta))\n");
     printf("a2: %f +/- %f\n",xs[0],exs[0]);
-    printf("chisq: %f\n",min->MinValue());
-    printf("chisq/ndf: %f\n",min->MinValue()/ndf);
+    printf("\nchisq:\n%f\n",min->MinValue());
+    printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
 
   }
   
-  
-
 }
