@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     printf("\n  --fixeda2a4a6 A2_FIXED A4_FIXED A6_FIXED\n");
     printf("  Uses fixed values of a2, a4, and a6 in the fit.\n");
     printf("\n  --chisq\n");
-    printf("  Only prints the reduced chi-square value to the terminal,\n  omitting all other output.\n");
+    printf("  Only prints the non-reduced chi-square value to the terminal,\n  omitting all other output.\n");
     printf("\n  --coeff\n");
     printf("  Only prints the reduced a2, a4, and a6 values to the terminal,\n  omitting all other output.\n");
     exit(-1);
@@ -310,10 +310,11 @@ void find_chisqMin(int mode) {
       printf("a4: %f +/- %f\n",xs[1],exs[1]);
       printf("a6: %f +/- %f\n",xs[2],exs[2]);
       printf("scaling: %f +/- %f\n",xs[3],exs[3]);
+      printf("ndf: %.0f\n",ndf);
       printf("\nchisq:\n%f\n",min->MinValue());
       printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
     }else if(printMode == 1){
-      printf("%f\n",min->MinValue()/ndf);
+      printf("%f\n",min->MinValue());
     }else if(printMode == 2){
       printf("a2: %f +/- %f\n",xs[0],exs[0]);
       printf("a4: %f +/- %f\n",xs[1],exs[1]);
@@ -359,10 +360,11 @@ void find_chisqMin(int mode) {
       printf("a2: %f +/- %f\n",xs[0],exs[0]);
       printf("a4: %f +/- %f\n",xs[1],exs[1]);
       printf("scaling: %f +/- %f\n",xs[2],exs[2]);
+      printf("ndf: %.0f\n",ndf);
       printf("\nchisq:\n%f\n",min->MinValue());
       printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
     }else if(printMode == 1){
-      printf("%f\n",min->MinValue()/ndf);
+      printf("%f\n",min->MinValue());
     }else if(printMode == 2){
       printf("a2: %f +/- %f\n",xs[0],exs[0]);
       printf("a4: %f +/- %f\n",xs[1],exs[1]);
@@ -402,10 +404,11 @@ void find_chisqMin(int mode) {
       printf("Fit function: f(x) = 1 + a2*p2(cos (theta))\n");
       printf("a2: %f +/- %f\n",xs[0],exs[0]);
       printf("scaling: %f +/- %f\n",xs[1],exs[1]);
+      printf("ndf: %.0f\n",ndf);
       printf("\nchisq:\n%f\n",min->MinValue());
       printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
     }else if(printMode == 1){
-      printf("%f\n",min->MinValue()/ndf);
+      printf("%f\n",min->MinValue());
     }else if(printMode == 2){
       printf("a2: %f +/- %f\n",xs[0],exs[0]);
     }
@@ -437,10 +440,11 @@ void find_chisqMin(int mode) {
       printf("Fit function: f(x) = 1 + a4*p4(cos (theta))\n");
       printf("a4: %f +/- %f\n",xs[0],exs[0]);
       printf("scaling: %f +/- %f\n",xs[1],exs[1]);
+      printf("ndf: %.0f\n",ndf);
       printf("\nchisq:\n%f\n",min->MinValue());
       printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
     }else if(printMode == 1){
-      printf("%f\n",min->MinValue()/ndf);
+      printf("%f\n",min->MinValue());
     }else if(printMode == 2){
       printf("a4: %f +/- %f\n",xs[0],exs[0]);
     }
@@ -472,10 +476,11 @@ void find_chisqMin(int mode) {
       printf("Fit function: f(x) = 1 + a6*p6(cos (theta))\n");
       printf("a6: %f +/- %f\n",xs[0],exs[0]);
       printf("scaling: %f +/- %f\n",xs[1],exs[1]);
+      printf("ndf: %.0f\n",ndf);
       printf("\nchisq:\n%f\n",min->MinValue());
       printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
     }else if(printMode == 1){
-      printf("%f\n",min->MinValue()/ndf);
+      printf("%f\n",min->MinValue());
     }else if(printMode == 2){
       printf("a6: %f +/- %f\n",xs[0],exs[0]);
     }
@@ -509,10 +514,11 @@ void find_chisqMin(int mode) {
     if(printMode == 0){
       printf("Fit function: f(x) = 1 + a2*p2(cos (theta))\n");
       printf("a2: %f +/- %f\n",xs[0],exs[0]);
+      printf("ndf: %.0f\n",ndf);
       printf("\nchisq:\n%f\n",min->MinValue());
       printf("chisq/ndf:\n%f\n",min->MinValue()/ndf);
     }else if(printMode == 1){
-      printf("%f\n",min->MinValue()/ndf);
+      printf("%f\n",min->MinValue());
     }else if(printMode == 2){
       printf("a2: %f +/- %f\n",xs[0],exs[0]);
     }
