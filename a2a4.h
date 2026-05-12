@@ -19,6 +19,7 @@ void   find_chisqMin(int); // ROOT minimization class
 double angle[NPTS],cosangle[NPTS],val[NPTS],err[NPTS];
 int numDataPts;
 double fixedA2,fixedA4,fixedA6;
+int printMode; //0=print all output, 1=print chisq/NDF only, 2=print a2/a4/a6 only
 
 // ROOT stuff
 double a2a4(const double *par); // function to get chisq
