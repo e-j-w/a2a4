@@ -5,6 +5,7 @@ int main(int argc, char *argv[]) {
   char str[256];
   int mode = FITMODE_A2A4;
   printMode = 0; //by default, print everything
+  angleFormat = 0; //by default, use degrees
   fixedA2=BIG_NUMBER;
   fixedA4=BIG_NUMBER;
   fixedA6=BIG_NUMBER;
@@ -27,6 +28,8 @@ int main(int argc, char *argv[]) {
     printf("  Only prints the non-reduced chi-square value to the terminal,\n  omitting all other output.\n");
     printf("\n  --coeff\n");
     printf("  Only prints the reduced a2, a4, and a6 values to the terminal,\n  omitting all other output.\n");
+    printf("\n  --cosine\n");
+    printf("  Use input angles formatted as cos(theta), rather than degrees.\n");
     exit(-1);
   }
 
@@ -70,6 +73,8 @@ int main(int argc, char *argv[]) {
         printMode = 1; //only show chisq
       }else if(strcmp(argv[arg],"--coeff")==0){
         printMode = 2; //only show a2, a4, a6
+      }else if(strcmp(argv[arg],"--cosine")==0){
+        angleFormat = 1;
       }
     }
   }
@@ -85,7 +90,12 @@ int main(int argc, char *argv[]) {
         // import angular distribution data
         if (sscanf(str, "%lf %lf %lf", &angle[numDataPts], &val[numDataPts], &err[numDataPts]) == 3) {
           //printf("here!\n");
-          cosangle[numDataPts]=cos(angle[numDataPts]*3.14159265/180.0);
+          if(angleFormat == 0){
+            cosangle[numDataPts]=cos(angle[numDataPts]*3.14159265/180.0);
+          }else{
+            cosangle[numDataPts]=angle[numDataPts];
+          }
+          
           //printf("here!\n");
           numDataPts++;
         }
@@ -94,9 +104,9 @@ int main(int argc, char *argv[]) {
 
   if(printMode == 0){
     printf("Data read in.\n");
-    printf("Angle     CosAngle Val      Err\n");
+    printf("Angle data  CosAngle  Val       Err\n");
     for(int i=0;i<numDataPts;i++){
-      printf("%f %f %f %f\n",angle[i],cosangle[i],val[i],err[i]);
+      printf("%7.4f     %7.4f  %7.4f   %7.4f\n",angle[i],cosangle[i],val[i],err[i]);
     }
     printf("\n");
   }
